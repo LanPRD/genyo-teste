@@ -1,0 +1,14 @@
+/dist
+/node_modules
+/coverage
+/src/generated
+*.tsbuildinfo
+*.log
+.DS_Store
+.idea
+.vscode/*
+!.vscode/settings.json
+.env
+.env.*.local
+graphify-out
+.claude/*.md
