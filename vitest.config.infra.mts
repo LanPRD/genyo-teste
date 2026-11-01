@@ -12,6 +12,7 @@ export default defineConfig({
     globals: true,
     root: "./",
     fileParallelism: false,
+    globalSetup: ["__tests__/global-setup-infra.ts"],
     env: {
       NODE_ENV: "test",
       DATABASE_URL:

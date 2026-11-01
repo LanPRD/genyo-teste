@@ -129,8 +129,9 @@ níveis:
   app completo, também contra um MongoDB real.
 
 Integração e e2e compartilham o MongoDB do `docker-compose.test.yml` (porta
-27018, banco `genyo_test`), isolado do de desenvolvimento. Os scripts sobem o
-container; `npm run db:test:down` derruba.
+27018, banco `genyo_test`), isolado do de desenvolvimento. O `globalSetup` do
+Vitest sobe o container antes da suíte e o remove no fim, inclusive quando algum
+teste falha. `npm run test:infra` roda integração e e2e com um único container.
 
 ### CI
 
