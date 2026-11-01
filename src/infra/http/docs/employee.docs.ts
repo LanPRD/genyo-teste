@@ -1,4 +1,4 @@
-import { CreateEmployeeSchema } from "@/application/dtos";
+import { CreateEmployeeSchema, ListEmployeesSchema } from "@/application/dtos";
 import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import {
@@ -84,12 +84,20 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
     tags: ["Employees"],
     summary: "Lista os funcionários",
     description:
-      "Retorna todos os funcionários, ordenados pela data de admissão (do mais antigo para o mais recente). Inclui ativos e desligados.",
+      "Paginação por cursor, ordenada pela data de admissão (do mais antigo para o mais recente). Inclui ativos e desligados. Para a próxima página, envie `meta.nextCursor` no parâmetro `cursor`; quando for nulo, não há mais páginas.",
+    request: { query: ListEmployeesSchema },
     responses: {
       200: {
-        description: "Lista de funcionários.",
+        description: "Página de funcionários.",
         content: { "application/json": { schema: EmployeeListResponseSchema } }
       },
+      400: errorResponse("Parâmetros de paginação inválidos.", {
+        error: "VALIDATION_ERROR",
+        message: "Invalid pagination params",
+        details: [
+          { field: "limit", message: "Too big: expected number to be <=100" }
+        ]
+      }),
       500: internalError
     }
   });

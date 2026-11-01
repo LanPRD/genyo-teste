@@ -46,7 +46,20 @@ export const EmployeeResponseSchema = z
   .meta({ id: "EmployeeResponse" });
 
 export const EmployeeListResponseSchema = z
-  .object({ data: z.array(EmployeeSchema) })
+  .object({
+    data: z.array(EmployeeSchema),
+    meta: z.object({
+      limit: z.number().meta({
+        description: "Tamanho da página solicitado.",
+        example: 10
+      }),
+      nextCursor: z.string().nullable().meta({
+        description:
+          "Cursor para buscar a próxima página. Nulo na última página.",
+        example: "6297e9bb-4629-4cbe-8837-f0394e92f0c5"
+      })
+    })
+  })
   .meta({ id: "EmployeeListResponse" });
 
 export const ErrorResponseSchema = z
