@@ -21,8 +21,11 @@ npm run prisma:push   # cria coleções e índices
 npm run dev
 ```
 
-Outros scripts: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`
-e `npm start`.
+A API sobe em `http://localhost:3000`. A documentação interativa (Swagger UI)
+fica em `http://localhost:3000/docs`, onde dá para testar todas as rotas.
+
+Outros scripts: `npm test`, `npm run test:integration`, `npm run test:e2e`,
+`npm run lint`, `npm run typecheck`, `npm run build` e `npm start`.
 
 ## Decisões técnicas
 
@@ -152,7 +155,14 @@ CI em pull request.
 
 ### Observações
 
-- Rotas de `Employee`: `POST /employees`, `GET /employees`, `GET /employees/:id`
-  e `DELETE /employees/:id`.
+- Rotas de `Employee`: `POST /employees`, `GET /employees`,
+  `GET /employees/:id`, `PUT /employees/:id` e `DELETE /employees/:id`.
+- O `PUT` substitui todos os campos e aplica as mesmas regras do cadastro, como
+  um formulário preenchido com os dados atuais. Omitir `terminationDate` volta o
+  funcionário a ativo. Os modais de confirmação da spec são do frontend: a API
+  só persiste quando recebe a requisição já confirmada.
+- A periodicidade do fechamento usa códigos em inglês na API (`MONTHLY`,
+  `BIMONTHLY`, `QUARTERLY`, `SEMIANNUAL` e `ANNUAL`). O mapeamento para Mensal,
+  Bimestral, Trimestral, Semestral e Anual fica no frontend.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.
