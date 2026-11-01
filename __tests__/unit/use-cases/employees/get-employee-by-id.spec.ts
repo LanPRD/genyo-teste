@@ -16,9 +16,7 @@ describe("GetEmployeeByIdUseCase", () => {
   it("returns the employee when it exists", async () => {
     // Arrange
     const { sut, repo } = makeSut();
-    const employee = await repo.create(
-      Employee.create({ name: "John", email: "john@example.com" })
-    );
+    const employee = await repo.create(Employee.create({} as any));
 
     // Act
     const result = await sut.execute(employee.id.toString());

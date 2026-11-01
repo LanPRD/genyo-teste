@@ -1,9 +1,14 @@
 import { Entity, UniqueEntityId } from "@/core/entities";
 import type { Optional } from "@/core/types/optional";
+import type { ClosingPeriodicity } from "../enums";
 
 export interface EmployeeProps {
   name: string;
-  email: string;
+  hireDate: Date;
+  terminationDate?: Date;
+  workdayStartTime: string;
+  workdayEndTime: string;
+  closingPeriodicity: ClosingPeriodicity;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -14,8 +19,24 @@ export class Employee extends Entity<EmployeeProps> {
     return this.props.name;
   }
 
-  get email(): string {
-    return this.props.email;
+  get hireDate(): Date {
+    return this.props.hireDate;
+  }
+
+  get terminationDate(): Date | undefined {
+    return this.props.terminationDate;
+  }
+
+  get workdayStartTime(): string {
+    return this.props.workdayStartTime;
+  }
+
+  get workdayEndTime(): string {
+    return this.props.workdayEndTime;
+  }
+
+  get closingPeriodicity(): ClosingPeriodicity {
+    return this.props.closingPeriodicity;
   }
 
   get createdAt(): Date {

@@ -1,0 +1,7 @@
+export enum ClosingPeriodicity {
+  MONTHLY = "MONTHLY",
+  BIMONTHLY = "BIMONTHLY",
+  QUARTERLY = "QUARTERLY",
+  SEMIANNUAL = "SEMIANNUAL",
+  ANNUAL = "ANNUAL"
+}

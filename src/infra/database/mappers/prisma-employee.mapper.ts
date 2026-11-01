@@ -1,5 +1,6 @@
 import { UniqueEntityId } from "@/core/entities";
 import { Employee } from "@/domain/entities";
+import { ClosingPeriodicity } from "@/domain/enums";
 import type { Prisma, Employee as PrismaEmployee } from "@prisma/client";
 
 export class PrismaEmployeeMapper {
@@ -7,7 +8,11 @@ export class PrismaEmployeeMapper {
     return Employee.create(
       {
         name: raw.name,
-        email: raw.email,
+        closingPeriodicity: ClosingPeriodicity[raw.closingPeriodicity],
+        hireDate: raw.hireDate,
+        workdayEndTime: raw.workdayEndTime,
+        workdayStartTime: raw.workdayStartTime,
+        terminationDate: raw.terminationDate ?? undefined,
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
         deletedAt: raw.deletedAt
@@ -20,7 +25,11 @@ export class PrismaEmployeeMapper {
     return {
       id: employee.id.toString(),
       name: employee.name,
-      email: employee.email,
+      closingPeriodicity: employee.closingPeriodicity,
+      hireDate: employee.hireDate,
+      terminationDate: employee.terminationDate ?? null,
+      workdayStartTime: employee.workdayStartTime,
+      workdayEndTime: employee.workdayEndTime,
       createdAt: employee.createdAt,
       updatedAt: employee.updatedAt,
       deletedAt: employee.deletedAt

@@ -22,29 +22,22 @@ export class CreateEmployeeUseCase {
       const parsed = CreateEmployeeSchema.safeParse(input);
 
       if (!parsed.success) {
-        return left(new ValidationError("Invalid employee data"));
+        return left(new ValidationError("Invalid employee data", parsed.error));
       }
 
-      const { name, email } = parsed.data;
+      const { hireDate, terminationDate, ...rest } = parsed.data;
 
-      const existing = await this.employeeRepository.findByEmail(email);
-
-      if (existing) {
-        return left(
-          new ConflictError("Employee with this email already exists")
-        );
-      }
-
-      const employee = await this.employeeRepository.create(
-        Employee.create({ name, email })
+      const employeeCreated = await this.employeeRepository.create(
+        Employee.create({
+          ...rest,
+          hireDate: new Date(hireDate),
+          terminationDate:
+            terminationDate ? new Date(terminationDate) : undefined
+        })
       );
 
-      return right({ employee });
+      return right({ employee: employeeCreated });
     } catch (error) {
-      if (error instanceof ConflictError) {
-        return left(error);
-      }
-
       console.error("Error creating employee", error);
       return left(new InternalError("Error creating employee"));
     }

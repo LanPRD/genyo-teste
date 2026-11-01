@@ -7,13 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ClosingPeriodicity {
+  MONTHLY
+  BIMONTHLY
+  QUARTERLY
+  SEMIANNUAL
+  ANNUAL
+}
+
 model Employee {
-  id        String    @id @map("_id")
-  name      String
-  email     String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id                 String             @id @map("_id")
+  name               String
+  hireDate           DateTime
+  terminationDate    DateTime?
+  workdayStartTime   String
+  workdayEndTime     String
+  closingPeriodicity ClosingPeriodicity
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  deletedAt          DateTime?
 
   @@map("employees")
 }
