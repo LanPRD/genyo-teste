@@ -4,9 +4,9 @@ API em Node.js + TypeScript com Express, MongoDB e Prisma.
 
 ## Stack
 
-- Node 22, TypeScript 6, Express 5
+- Node 24, TypeScript 6, Express 5
 - MongoDB + Prisma 6
-- Zod (validação de DTOs e de variáveis de ambiente)
+- Zod (validação de DTOs e de variáveis de ambiente) e OpenAPI com Swagger UI
 - Vitest + Supertest (testes), ESLint com `@prdev-solutions/eslint-config` e
   Prettier
 - GitHub Actions + semantic-release
@@ -51,6 +51,22 @@ O controller faz `throw result.value` quando recebe um `Left`, e um único
 `errorHandler` converte `AppError` em resposta HTTP. Exceções inesperadas viram
 `InternalError` no use case ou 500 no handler.
 
+### Validação
+
+O schema Zod fica em `application/dtos` e é executado só no use case, que
+devolve um `ValidationError` com os campos inválidos. Datas (`YYYY-MM-DD`) e
+horários (`HH:mm`) ficam como string no DTO e só viram `Date` ao criar a
+entidade. Assim o schema não transforma o tipo, e comparar datas ou horários é
+comparar texto ISO.
+
+### Documentação da API
+
+O OpenAPI 3.1 é gerado a partir dos schemas Zod com
+`@asteasolutions/zod-to-openapi`, então o DTO de entrada é a mesma fonte da
+validação e da documentação. Descrições e exemplos dos campos vêm de `.meta()`
+no próprio schema. As rotas e respostas são registradas em `infra/http/docs`. A
+interface do Swagger UI fica em `/docs` e o JSON em `/docs.json`.
+
 ### Express sem injeção de dependência
 
 O projeto de referência que usei como base é em NestJS. Aqui o Nest não existe,
@@ -83,7 +99,8 @@ existe adapter para MongoDB, então ele não funciona com este banco. Usei a
 6.19.3, a última com suporte a MongoDB. Os ids são strings (UUID) mapeadas para
 `_id`, para manter as entidades independentes do `ObjectId`.
 
-O Prisma só faz transações no MongoDB com replica set, por isso o
+O Prisma não tem migrations para MongoDB, então o schema é aplicado com
+`prisma db push`. Ele só faz transações com replica set, por isso o
 `docker-compose.yml` sobe o Mongo já com `rs0` iniciado.
 
 ### TypeScript 6 em vez do 7
@@ -114,7 +131,6 @@ O workflow `release.yml` roda lint, typecheck, build e testes em push na
 
 ### Observações
 
-- A entidade `Employee` e suas rotas (`POST /employees`, `GET /employees/:id`)
-  são só um exemplo mínimo para mostrar o fluxo completo entre as camadas.
+- Rotas de `Employee`: `POST /employees` e `GET /employees/:id`.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.
