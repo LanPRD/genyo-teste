@@ -14,6 +14,15 @@ const employeeBody = {
   closingPeriodicity: "MONTHLY"
 };
 
+const updatedBody = {
+  name: "Ana Souza",
+  hireDate: "2025-03-01",
+  terminationDate: "2026-06-30",
+  workdayStartTime: "09:00",
+  workdayEndTime: "18:00",
+  closingPeriodicity: "ANNUAL"
+};
+
 function makeApp(checkDatabase = async () => {}) {
   const container = createContainer({
     employeeRepository: new PrismaEmployeeRepository(prisma),
@@ -154,6 +163,77 @@ describe("HTTP app (e2e)", () => {
     expect(response.status).toBe(400);
     expect(response.body.error).toBe("VALIDATION_ERROR");
     expect(response.body.details[0].field).toBe("limit");
+  });
+
+  it("PUT /employees/:id updates the employee", async () => {
+    const app = makeApp();
+    const created = await request(app).post("/employees").send(employeeBody);
+    const id = created.body.data.id;
+
+    const updated = await request(app)
+      .put(`/employees/${id}`)
+      .send(updatedBody);
+    const found = await request(app).get(`/employees/${id}`);
+
+    expect(updated.status).toBe(200);
+    expect(updated.body.data).toMatchObject({
+      id,
+      name: "Ana Souza",
+      hireDate: "2025-03-01T00:00:00.000Z",
+      terminationDate: "2026-06-30T00:00:00.000Z",
+      workdayStartTime: "09:00",
+      workdayEndTime: "18:00",
+      closingPeriodicity: "ANNUAL",
+      createdAt: created.body.data.createdAt
+    });
+    expect(found.body.data).toEqual(updated.body.data);
+    expect(await prisma.employee.count()).toBe(1);
+  });
+
+  it("PUT /employees/:id turns the employee active again without terminationDate", async () => {
+    const app = makeApp();
+    const created = await request(app)
+      .post("/employees")
+      .send({ ...employeeBody, terminationDate: "2026-12-31" });
+
+    const updated = await request(app)
+      .put(`/employees/${created.body.data.id}`)
+      .send(employeeBody);
+
+    expect(updated.status).toBe(200);
+    expect(updated.body.data.terminationDate).toBeNull();
+  });
+
+  it("PUT /employees/:id returns 400 with details and keeps the stored data", async () => {
+    const app = makeApp();
+    const created = await request(app).post("/employees").send(employeeBody);
+    const id = created.body.data.id;
+
+    const response = await request(app)
+      .put(`/employees/${id}`)
+      .send({ ...updatedBody, name: "Ana 2", workdayEndTime: "07:00" });
+    const found = await request(app).get(`/employees/${id}`);
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("VALIDATION_ERROR");
+    expect(response.body.details).toEqual([
+      { field: "name", message: "Name must not contain numbers" },
+      {
+        field: "workdayEndTime",
+        message: "Workday end time must not be before start time"
+      }
+    ]);
+    expect(found.body.data.name).toBe("Maria da Silva");
+  });
+
+  it("PUT /employees/:id returns 404 when missing and creates nothing", async () => {
+    const response = await request(makeApp())
+      .put("/employees/nope")
+      .send(updatedBody);
+
+    expect(response.status).toBe(404);
+    expect(response.body.error).toBe("EMPLOYEE_NOT_FOUND");
+    expect(await prisma.employee.count()).toBe(0);
   });
 
   it("returns 400 on malformed JSON", async () => {

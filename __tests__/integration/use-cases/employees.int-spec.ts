@@ -3,7 +3,8 @@ import {
   CreateEmployeeUseCase,
   DeleteEmployeeUseCase,
   GetEmployeeByIdUseCase,
-  ListEmployeesUseCase
+  ListEmployeesUseCase,
+  UpdateEmployeeUseCase
 } from "@/application/use-cases/employees";
 import { NotFoundError, ValidationError } from "@/core/errors";
 import { ClosingPeriodicity } from "@/domain/enums";
@@ -203,6 +204,94 @@ describe("Employee use cases (integration)", () => {
         expect(result.value.employees).toEqual([]);
         expect(result.value.nextCursor).toBeNull();
       }
+    });
+  });
+
+  describe("UpdateEmployeeUseCase", () => {
+    let sut: UpdateEmployeeUseCase;
+
+    beforeAll(() => {
+      sut = new UpdateEmployeeUseCase(repository);
+    });
+
+    it("persists the new data and keeps the id and creation date", async () => {
+      // Arrange
+      const created = await new CreateEmployeeUseCase(repository).execute({
+        ...input,
+        terminationDate: "2026-12-31"
+      });
+      const id = created.isRight() ? created.value.employee.id.toString() : "";
+      const before = await prisma.employee.findUniqueOrThrow({ where: { id } });
+
+      // Act
+      const result = await sut.execute(id, {
+        name: "Ana Souza",
+        hireDate: "2025-03-01",
+        terminationDate: "2026-06-30",
+        workdayStartTime: "09:00",
+        workdayEndTime: "18:00",
+        closingPeriodicity: ClosingPeriodicity.ANNUAL
+      });
+
+      // Assert
+      expect(result.isRight()).toBe(true);
+      expect(await prisma.employee.count()).toBe(1);
+      expect(
+        await prisma.employee.findUniqueOrThrow({ where: { id } })
+      ).toMatchObject({
+        name: "Ana Souza",
+        hireDate: new Date("2025-03-01"),
+        terminationDate: new Date("2026-06-30"),
+        workdayStartTime: "09:00",
+        workdayEndTime: "18:00",
+        closingPeriodicity: "ANNUAL",
+        createdAt: before.createdAt
+      });
+    });
+
+    it("clears the termination date when it is omitted", async () => {
+      // Arrange
+      const created = await new CreateEmployeeUseCase(repository).execute({
+        ...input,
+        terminationDate: "2026-12-31"
+      });
+      const id = created.isRight() ? created.value.employee.id.toString() : "";
+
+      // Act
+      const result = await sut.execute(id, input);
+
+      // Assert
+      expect(result.isRight()).toBe(true);
+      expect(
+        (await prisma.employee.findUniqueOrThrow({ where: { id } }))
+          .terminationDate
+      ).toBeNull();
+    });
+
+    it("returns NotFoundError and creates nothing when the employee does not exist", async () => {
+      // Act
+      const result = await sut.execute("missing-id", input);
+
+      // Assert
+      expect(result.value).toBeInstanceOf(NotFoundError);
+      expect(await prisma.employee.count()).toBe(0);
+    });
+
+    it("keeps the stored data when the input is invalid", async () => {
+      // Arrange
+      const created = await new CreateEmployeeUseCase(repository).execute(
+        input
+      );
+      const id = created.isRight() ? created.value.employee.id.toString() : "";
+
+      // Act
+      const result = await sut.execute(id, { ...input, name: "Ana 2" });
+
+      // Assert
+      expect(result.value).toBeInstanceOf(ValidationError);
+      expect(
+        (await prisma.employee.findUniqueOrThrow({ where: { id } })).name
+      ).toBe("Maria da Silva");
     });
   });
 });
