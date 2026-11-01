@@ -1,4 +1,8 @@
-import { CreateEmployeeSchema, ListEmployeesSchema } from "@/application/dtos";
+import {
+  CreateEmployeeSchema,
+  ListEmployeesSchema,
+  UpdateEmployeeSchema
+} from "@/application/dtos";
 import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
 import {
@@ -7,13 +11,15 @@ import {
   ErrorResponseSchema
 } from "./schemas";
 
-const errorResponse = (
+function errorResponse(
   description: string,
   example: z.infer<typeof ErrorResponseSchema>
-) => ({
-  description,
-  content: { "application/json": { schema: ErrorResponseSchema, example } }
-});
+) {
+  return {
+    description,
+    content: { "application/json": { schema: ErrorResponseSchema, example } }
+  };
+}
 
 const internalError = errorResponse("Erro interno.", {
   error: "INTERNAL_ERROR",
@@ -32,6 +38,27 @@ const employeeNotFound = errorResponse("Funcionário não encontrado.", {
   message: "Employee with id 6297e9bb-4629-4cbe-8837-f0394e92f0c5 not found"
 });
 
+const employeeValidationError = errorResponse("Dados inválidos.", {
+  error: "VALIDATION_ERROR",
+  message: "Invalid employee data",
+  details: [
+    { field: "name", message: "Name must not contain numbers" },
+    {
+      field: "workdayEndTime",
+      message: "Workday end time must not be before start time"
+    }
+  ]
+});
+
+const employeeExample = {
+  name: "Maria da Silva",
+  hireDate: "2026-01-10",
+  terminationDate: "2026-12-31",
+  workdayStartTime: "08:00",
+  workdayEndTime: "17:00",
+  closingPeriodicity: "MONTHLY"
+};
+
 export function registerEmployeeDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
@@ -46,14 +73,7 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
         content: {
           "application/json": {
             schema: CreateEmployeeSchema,
-            example: {
-              name: "Maria da Silva",
-              hireDate: "2026-01-10",
-              terminationDate: "2026-12-31",
-              workdayStartTime: "08:00",
-              workdayEndTime: "17:00",
-              closingPeriodicity: "MONTHLY"
-            }
+            example: employeeExample
           }
         }
       }
@@ -63,17 +83,7 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
         description: "Funcionário cadastrado.",
         content: { "application/json": { schema: EmployeeResponseSchema } }
       },
-      400: errorResponse("Dados inválidos.", {
-        error: "VALIDATION_ERROR",
-        message: "Invalid employee data",
-        details: [
-          { field: "name", message: "Name must not contain numbers" },
-          {
-            field: "workdayEndTime",
-            message: "Workday end time must not be before start time"
-          }
-        ]
-      }),
+      400: employeeValidationError,
       500: internalError
     }
   });
@@ -113,6 +123,36 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
         description: "Funcionário encontrado.",
         content: { "application/json": { schema: EmployeeResponseSchema } }
       },
+      404: employeeNotFound,
+      500: internalError
+    }
+  });
+
+  registry.registerPath({
+    method: "put",
+    path: "/employees/{id}",
+    tags: ["Employees"],
+    summary: "Edita um funcionário",
+    description:
+      "Substitui os dados do funcionário. Envie todos os campos, como num formulário preenchido com os dados atuais: valem as mesmas regras de validação do cadastro. Omitir `terminationDate` volta o funcionário a ativo.",
+    request: {
+      params: idParam,
+      body: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: UpdateEmployeeSchema,
+            example: employeeExample
+          }
+        }
+      }
+    },
+    responses: {
+      200: {
+        description: "Funcionário atualizado.",
+        content: { "application/json": { schema: EmployeeResponseSchema } }
+      },
+      400: employeeValidationError,
       404: employeeNotFound,
       500: internalError
     }
