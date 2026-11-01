@@ -43,6 +43,16 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      - name: Integration tests
+        run: npm run test:integration
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Stop test database
+        if: always()
+        run: npm run db:test:down
+
   release:
     needs: test
     runs-on: ubuntu-latest
