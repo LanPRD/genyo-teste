@@ -11,8 +11,7 @@ export class EmployeePresenter {
       workdayStartTime: employee.workdayStartTime,
       workdayEndTime: employee.workdayEndTime,
       createdAt: employee.createdAt,
-      updatedAt: employee.updatedAt,
-      deletedAt: employee.deletedAt
+      updatedAt: employee.updatedAt
     };
   }
 }

@@ -11,7 +11,6 @@ export interface EmployeeProps {
   closingPeriodicity: ClosingPeriodicity;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: Date | null;
 }
 
 export class Employee extends Entity<EmployeeProps> {
@@ -47,19 +46,14 @@ export class Employee extends Entity<EmployeeProps> {
     return this.props.updatedAt;
   }
 
-  get deletedAt(): Date | null {
-    return this.props.deletedAt;
-  }
-
   static create(
-    props: Optional<EmployeeProps, "createdAt" | "updatedAt" | "deletedAt">,
+    props: Optional<EmployeeProps, "createdAt" | "updatedAt">,
     id?: UniqueEntityId
   ): Employee {
     return new Employee(
       {
         createdAt: new Date(),
         updatedAt: new Date(),
-        deletedAt: null,
         ...props
       },
       id

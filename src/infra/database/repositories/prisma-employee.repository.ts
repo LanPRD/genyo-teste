@@ -5,8 +5,10 @@ import type { PrismaService } from "../prisma/prisma.service";
 
 export class PrismaEmployeeRepository implements EmployeeRepository {
   constructor(private readonly prisma: PrismaService) {}
-  delete(_id: string): Promise<void> {
-    throw new Error("Method not implemented.");
+  async delete(id: string): Promise<void> {
+    await this.prisma.employee.delete({
+      where: { id: id }
+    });
   }
 
   list(): Promise<Employee[]> {
@@ -19,7 +21,7 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
 
   async findById(id: string): Promise<Employee | null> {
     const employee = await this.prisma.employee.findFirst({
-      where: { id, deletedAt: null }
+      where: { id }
     });
 
     if (!employee) return null;

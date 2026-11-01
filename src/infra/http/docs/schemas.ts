@@ -37,11 +37,6 @@ export const EmployeeSchema = z
     updatedAt: z.iso.datetime().meta({
       description: "Data da última atualização do registro.",
       example: "2026-11-01T20:52:15.031Z"
-    }),
-    deletedAt: z.iso.datetime().nullable().meta({
-      description:
-        "Data de exclusão lógica. Nulo quando o registro está ativo.",
-      example: null
     })
   })
   .meta({ id: "Employee", description: "Funcionário cadastrado." });

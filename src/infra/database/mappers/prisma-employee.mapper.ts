@@ -14,8 +14,7 @@ export class PrismaEmployeeMapper {
         workdayStartTime: raw.workdayStartTime,
         terminationDate: raw.terminationDate ?? undefined,
         createdAt: raw.createdAt,
-        updatedAt: raw.updatedAt,
-        deletedAt: raw.deletedAt
+        updatedAt: raw.updatedAt
       },
       new UniqueEntityId(raw.id)
     );
@@ -31,8 +30,7 @@ export class PrismaEmployeeMapper {
       workdayStartTime: employee.workdayStartTime,
       workdayEndTime: employee.workdayEndTime,
       createdAt: employee.createdAt,
-      updatedAt: employee.updatedAt,
-      deletedAt: employee.deletedAt
+      updatedAt: employee.updatedAt
     };
   }
 }
