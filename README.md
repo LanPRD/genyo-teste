@@ -64,7 +64,7 @@ explícito e permite testar o app HTTP com repositórios em memória sem banco.
 - `cors` configurável por `CORS_ORIGIN` (lista separada por vírgula; `*` por
   padrão).
 - `express.json` com limite de 1mb.
-- `validate(schema)`, que faz o papel do pipe de validação do Nest e devolve os
+- A validação do body fica no use case, com Zod. O `errorHandler` formata os
   erros por campo.
 - `notFoundHandler` e `errorHandler` por último, no lugar dos filters do Nest.
   Aproveitei que o Express 5 propaga erros de handlers `async`, então não

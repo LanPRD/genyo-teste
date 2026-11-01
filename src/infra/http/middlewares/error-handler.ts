@@ -1,5 +1,7 @@
-import { AppError, HttpStatus } from "@/core/errors";
+import { formatZodError } from "@/application/dtos";
+import { AppError, HttpStatus, ValidationError } from "@/core/errors";
 import type { ErrorRequestHandler } from "express";
+import { ZodError } from "zod";
 
 interface BodyParserError extends Error {
   type?: string;
@@ -9,6 +11,15 @@ interface BodyParserError extends Error {
 export const errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
   if (res.headersSent) {
     next(error);
+    return;
+  }
+
+  if (error instanceof ValidationError && error.details instanceof ZodError) {
+    res.status(error.statusCode).json({
+      ...error.toJSON(),
+      details: formatZodError(error.details)
+    });
+
     return;
   }
 
