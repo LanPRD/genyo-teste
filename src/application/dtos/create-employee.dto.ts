@@ -58,8 +58,8 @@ export const CreateEmployeeSchema = z
     }
   )
   .meta({
-    id: "CreateEmployeeRequest",
-    description: "Dados para cadastrar um funcionário."
+    id: "EmployeeInput",
+    description: "Dados de um funcionário, usados no cadastro e na edição."
   });
 
 export type CreateEmployeeDto = z.infer<typeof CreateEmployeeSchema>;

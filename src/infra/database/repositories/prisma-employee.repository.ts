@@ -35,8 +35,13 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     };
   }
 
-  update(_employee: Employee): Promise<Employee> {
-    throw new Error("Method not implemented.");
+  async update(employee: Employee): Promise<Employee> {
+    const entity = await this.prisma.employee.update({
+      where: { id: employee.id.toString() },
+      data: PrismaEmployeeMapper.toPrismaUpdate(employee)
+    });
+
+    return PrismaEmployeeMapper.toDomain(entity);
   }
 
   async findById(id: string): Promise<Employee | null> {

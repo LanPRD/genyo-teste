@@ -46,8 +46,16 @@ export class InMemoryEmployeeRepository extends EmployeeRepository {
     };
   }
 
-  update(employee: Employee): Promise<Employee> {
-    throw new Error("Method not implemented.");
+  async update(employee: Employee): Promise<Employee> {
+    if (this.forceError) throw new Error("Forced error");
+
+    const index = this.employees.findIndex(e => e.id.equals(employee.id));
+
+    if (index === -1) throw new Error("Employee not found");
+
+    this.employees[index] = employee;
+
+    return employee;
   }
 
   async findById(id: string): Promise<Employee | null> {

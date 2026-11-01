@@ -33,4 +33,18 @@ export class PrismaEmployeeMapper {
       updatedAt: employee.updatedAt
     };
   }
+
+  static toPrismaUpdate(
+    employee: Employee
+  ): Prisma.EmployeeUncheckedUpdateInput {
+    return {
+      name: employee.name,
+      closingPeriodicity: employee.closingPeriodicity,
+      hireDate: employee.hireDate,
+      terminationDate: employee.terminationDate ?? null,
+      workdayStartTime: employee.workdayStartTime,
+      workdayEndTime: employee.workdayEndTime,
+      updatedAt: employee.updatedAt
+    };
+  }
 }
