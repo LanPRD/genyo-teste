@@ -10,12 +10,36 @@ export const CreateEmployeeSchema = z
       .string()
       .trim()
       .min(1, "Name is required")
-      .regex(/^\D+$/, "Name must not contain numbers"),
-    hireDate: date,
-    terminationDate: date.optional(),
-    workdayStartTime: time,
-    workdayEndTime: time,
-    closingPeriodicity: z.enum(ClosingPeriodicity)
+      .regex(/^\D+$/, "Name must not contain numbers")
+      .meta({
+        description: "Nome do funcionário. Não pode conter números.",
+        example: "Maria da Silva"
+      }),
+    hireDate: date.meta({
+      description: "Data de admissão, no formato YYYY-MM-DD.",
+      example: "2026-01-10"
+    }),
+    terminationDate: date
+      .meta({
+        description:
+          "Data de demissão, no formato YYYY-MM-DD. Omita para funcionário ativo. Não pode ser anterior à admissão.",
+        example: "2026-12-31"
+      })
+      .optional(),
+    workdayStartTime: time.meta({
+      description: "Hora de início do expediente, no formato HH:mm.",
+      example: "08:00"
+    }),
+    workdayEndTime: time.meta({
+      description:
+        "Hora de fim do expediente, no formato HH:mm. Não pode ser anterior ao início.",
+      example: "17:00"
+    }),
+    closingPeriodicity: z.enum(ClosingPeriodicity).meta({
+      description:
+        "Periodicidade do fechamento: MONTHLY (mensal), BIMONTHLY (bimestral), QUARTERLY (trimestral), SEMIANNUAL (semestral) ou ANNUAL (anual).",
+      example: ClosingPeriodicity.MONTHLY
+    })
   })
   .refine(
     ({ terminationDate, hireDate }) =>
@@ -32,6 +56,10 @@ export const CreateEmployeeSchema = z
       message: "Workday end time must not be before start time",
       path: ["workdayEndTime"]
     }
-  );
+  )
+  .meta({
+    id: "CreateEmployeeRequest",
+    description: "Dados para cadastrar um funcionário."
+  });
 
 export type CreateEmployeeDto = z.infer<typeof CreateEmployeeSchema>;
