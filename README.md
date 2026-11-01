@@ -67,6 +67,16 @@ validação e da documentação. Descrições e exemplos dos campos vêm de `.me
 no próprio schema. As rotas e respostas são registradas em `infra/http/docs`. A
 interface do Swagger UI fica em `/docs` e o JSON em `/docs.json`.
 
+### Paginação
+
+`GET /employees` usa paginação por cursor (`limit` e `cursor`), e não por
+`page`. No MongoDB o `skip` percorre e descarta os documentos anteriores, então
+a página 500 fica cada vez mais lenta. Com cursor o custo é o mesmo em qualquer
+página. A resposta traz `meta.nextCursor` (o `id` do último item), que é nulo na
+última página. A ordem é por data de admissão, com o `id` como desempate: sem
+ele, funcionários com a mesma data poderiam repetir ou sumir entre páginas. O
+preço é não ter `total` nem salto direto para uma página.
+
 ### Express sem injeção de dependência
 
 O projeto de referência que usei como base é em NestJS. Aqui o Nest não existe,
@@ -142,7 +152,7 @@ CI em pull request.
 
 ### Observações
 
-- Rotas de `Employee`: `POST /employees`, `GET /employees/:id` e
-  `DELETE /employees/:id`.
+- Rotas de `Employee`: `POST /employees`, `GET /employees`, `GET /employees/:id`
+  e `DELETE /employees/:id`.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.
