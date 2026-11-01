@@ -2,6 +2,14 @@
 
 API em Node.js + TypeScript com Express, MongoDB e Prisma.
 
+## Estrutura do repositório
+
+- `api/`: a API, com `package.json`, ESLint, Prettier e TypeScript próprios.
+- Raiz: orquestração (`package.json` com scripts atalho), release
+  (semantic-release), CI e `.editorconfig`.
+
+Os caminhos citados daqui para baixo são relativos a `api/`.
+
 ## Stack
 
 - Node 24, TypeScript 6, Express 5
@@ -14,6 +22,7 @@ API em Node.js + TypeScript com Express, MongoDB e Prisma.
 ## Como rodar
 
 ```bash
+cd api
 cp .env.example .env
 npm ci
 npm run db:up         # MongoDB local com replica set (Docker)
@@ -24,8 +33,10 @@ npm run dev
 A API sobe em `http://localhost:3000`. A documentação interativa (Swagger UI)
 fica em `http://localhost:3000/docs`, onde dá para testar todas as rotas.
 
-Outros scripts: `npm test`, `npm run test:integration`, `npm run test:e2e`,
-`npm run lint`, `npm run typecheck`, `npm run build` e `npm start`.
+Outros scripts, dentro de `api/`: `npm test`, `npm run test:integration`,
+`npm run test:e2e`, `npm run lint`, `npm run typecheck`, `npm run build` e
+`npm start`. Da raiz, `npm run dev`, `npm test`, `npm run lint`,
+`npm run typecheck` e `npm run build` chamam os mesmos scripts da API.
 
 ## Decisões técnicas
 
