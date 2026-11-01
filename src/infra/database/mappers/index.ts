@@ -1,1 +1,1 @@
-export * from "./prisma-user.mapper";
+export * from "./prisma-employee.mapper";

@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import type { Container } from "./container";
-import { createUserRoutes } from "./controllers/user/user.routes";
+import { createEmployeeRoutes } from "./controllers/employee/employee.routes";
 import { errorHandler } from "./middlewares/error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
 
@@ -20,7 +20,7 @@ export function createApp(container: Container, options: AppOptions = {}) {
   app.use(express.json({ limit: "1mb" }));
 
   app.get("/health", (req, res) => container.health.handle(req, res));
-  app.use("/users", createUserRoutes(container.user));
+  app.use("/employees", createEmployeeRoutes(container.employee));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

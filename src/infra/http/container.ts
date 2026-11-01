@@ -1,32 +1,32 @@
 import {
-  CreateUserUseCase,
-  GetUserByIdUseCase
-} from "@/application/use-cases/users";
-import type { UserRepository } from "@/domain/repositories";
-import { CreateUserController } from "./controllers/user/create-user.controller";
-import { GetUserByIdController } from "./controllers/user/get-user-by-id.controller";
+  CreateEmployeeUseCase,
+  GetEmployeeByIdUseCase
+} from "@/application/use-cases/employees";
+import type { EmployeeRepository } from "@/domain/repositories";
+import { CreateEmployeeController } from "./controllers/employee/create-employee.controller";
+import { GetEmployeeByIdController } from "./controllers/employee/get-employee-by-id.controller";
 import {
   HealthController,
   type DatabaseCheck
 } from "./health/health.controller";
 
 export interface ContainerDeps {
-  userRepository: UserRepository;
+  employeeRepository: EmployeeRepository;
   checkDatabase: DatabaseCheck;
 }
 
 export function createContainer({
-  userRepository,
+  employeeRepository,
   checkDatabase
 }: ContainerDeps) {
-  const createUser = new CreateUserUseCase(userRepository);
-  const getUserById = new GetUserByIdUseCase(userRepository);
+  const createEmployee = new CreateEmployeeUseCase(employeeRepository);
+  const getEmployeeById = new GetEmployeeByIdUseCase(employeeRepository);
 
   return {
     health: new HealthController(checkDatabase),
-    user: {
-      createUser: new CreateUserController(createUser),
-      getUserById: new GetUserByIdController(getUserById)
+    employee: {
+      createEmployee: new CreateEmployeeController(createEmployee),
+      getEmployeeById: new GetEmployeeByIdController(getEmployeeById)
     }
   };
 }

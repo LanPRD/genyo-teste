@@ -1,7 +1,7 @@
 import { Entity, UniqueEntityId } from "@/core/entities";
 import type { Optional } from "@/core/types/optional";
 
-export interface UserProps {
+export interface EmployeeProps {
   name: string;
   email: string;
   createdAt: Date;
@@ -9,7 +9,7 @@ export interface UserProps {
   deletedAt: Date | null;
 }
 
-export class User extends Entity<UserProps> {
+export class Employee extends Entity<EmployeeProps> {
   get name(): string {
     return this.props.name;
   }
@@ -31,10 +31,10 @@ export class User extends Entity<UserProps> {
   }
 
   static create(
-    props: Optional<UserProps, "createdAt" | "updatedAt" | "deletedAt">,
+    props: Optional<EmployeeProps, "createdAt" | "updatedAt" | "deletedAt">,
     id?: UniqueEntityId
-  ): User {
-    return new User(
+  ): Employee {
+    return new Employee(
       {
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -1,13 +1,13 @@
 import { createApp } from "@/infra/http/app";
 import { createContainer } from "@/infra/http/container";
 import request from "supertest";
-import { InMemoryUserRepository } from "../test-repositories/in-memory-user-repository";
+import { InMemoryEmployeeRepository } from "../test-repositories/in-memory-employee-repository";
 
 vi.spyOn(console, "error").mockImplementation(() => {});
 
 const makeApp = (checkDatabase = async () => {}) => {
   const container = createContainer({
-    userRepository: new InMemoryUserRepository(),
+    employeeRepository: new InMemoryEmployeeRepository(),
     checkDatabase
   });
 
@@ -44,24 +44,24 @@ describe("HTTP app", () => {
     expect(response.headers["x-content-type-options"]).toBe("nosniff");
   });
 
-  it("POST /users creates and GET /users/:id returns it", async () => {
+  it("POST /employees creates and GET /employees/:id returns it", async () => {
     const app = makeApp();
 
     const created = await request(app)
-      .post("/users")
+      .post("/employees")
       .send({ name: "John", email: "john@example.com" });
 
     expect(created.status).toBe(201);
 
-    const found = await request(app).get(`/users/${created.body.data.id}`);
+    const found = await request(app).get(`/employees/${created.body.data.id}`);
 
     expect(found.status).toBe(200);
     expect(found.body.data.email).toBe("john@example.com");
   });
 
-  it("POST /users returns 400 with details on invalid body", async () => {
+  it("POST /employees returns 400 with details on invalid body", async () => {
     const response = await request(makeApp())
-      .post("/users")
+      .post("/employees")
       .send({ name: "", email: "x" });
 
     expect(response.status).toBe(400);
@@ -69,30 +69,30 @@ describe("HTTP app", () => {
     expect(response.body.details).toHaveLength(2);
   });
 
-  it("POST /users returns 409 on duplicated email", async () => {
+  it("POST /employees returns 409 on duplicated email", async () => {
     const app = makeApp();
     const body = { name: "John", email: "john@example.com" };
 
-    await request(app).post("/users").send(body);
-    const response = await request(app).post("/users").send(body);
+    await request(app).post("/employees").send(body);
+    const response = await request(app).post("/employees").send(body);
 
     expect(response.status).toBe(409);
   });
 
   it("returns 400 on malformed JSON", async () => {
     const response = await request(makeApp())
-      .post("/users")
+      .post("/employees")
       .set("Content-Type", "application/json")
       .send("{bad");
 
     expect(response.status).toBe(400);
   });
 
-  it("GET /users/:id returns 404 when missing", async () => {
-    const response = await request(makeApp()).get("/users/nope");
+  it("GET /employees/:id returns 404 when missing", async () => {
+    const response = await request(makeApp()).get("/employees/nope");
 
     expect(response.status).toBe(404);
-    expect(response.body.error).toBe("USER_NOT_FOUND");
+    expect(response.body.error).toBe("EMPLOYEE_NOT_FOUND");
   });
 
   it("returns 404 for unknown route", async () => {

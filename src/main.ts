@@ -1,11 +1,11 @@
 import { prisma } from "@/infra/database/prisma/prisma.service";
-import { PrismaUserRepository } from "@/infra/database/repositories";
+import { PrismaEmployeeRepository } from "@/infra/database/repositories";
 import { env } from "@/infra/env/env";
 import { createApp } from "@/infra/http/app";
 import { createContainer } from "@/infra/http/container";
 
 const container = createContainer({
-  userRepository: new PrismaUserRepository(prisma),
+  employeeRepository: new PrismaEmployeeRepository(prisma),
   checkDatabase: async () => {
     await prisma.$runCommandRaw({ ping: 1 });
   }

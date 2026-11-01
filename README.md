@@ -114,7 +114,7 @@ O workflow `release.yml` roda lint, typecheck, build e testes em push na
 
 ### Observações
 
-- A entidade `User` e suas rotas (`POST /users`, `GET /users/:id`) são só um
-  exemplo mínimo para mostrar o fluxo completo entre as camadas.
+- A entidade `Employee` e suas rotas (`POST /employees`, `GET /employees/:id`)
+  são só um exemplo mínimo para mostrar o fluxo completo entre as camadas.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.

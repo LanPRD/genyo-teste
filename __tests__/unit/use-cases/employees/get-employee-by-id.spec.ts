@@ -1,33 +1,33 @@
-import { GetUserByIdUseCase } from "@/application/use-cases/users";
+import { GetEmployeeByIdUseCase } from "@/application/use-cases/employees";
 import { InternalError, NotFoundError } from "@/core/errors";
-import { User } from "@/domain/entities";
-import { InMemoryUserRepository } from "../../../test-repositories/in-memory-user-repository";
+import { Employee } from "@/domain/entities";
+import { InMemoryEmployeeRepository } from "../../../test-repositories/in-memory-employee-repository";
 
 vi.spyOn(console, "error").mockImplementation(() => {});
 
 const makeSut = () => {
-  const repo = new InMemoryUserRepository();
-  const sut = new GetUserByIdUseCase(repo);
+  const repo = new InMemoryEmployeeRepository();
+  const sut = new GetEmployeeByIdUseCase(repo);
 
   return { sut, repo };
 };
 
-describe("GetUserByIdUseCase", () => {
-  it("returns the user when it exists", async () => {
+describe("GetEmployeeByIdUseCase", () => {
+  it("returns the employee when it exists", async () => {
     // Arrange
     const { sut, repo } = makeSut();
-    const user = await repo.create(
-      User.create({ name: "John", email: "john@example.com" })
+    const employee = await repo.create(
+      Employee.create({ name: "John", email: "john@example.com" })
     );
 
     // Act
-    const result = await sut.execute(user.id.toString());
+    const result = await sut.execute(employee.id.toString());
 
     // Assert
     expect(result.isRight()).toBe(true);
   });
 
-  it("returns NotFoundError when user does not exist", async () => {
+  it("returns NotFoundError when employee does not exist", async () => {
     // Arrange
     const { sut } = makeSut();
 

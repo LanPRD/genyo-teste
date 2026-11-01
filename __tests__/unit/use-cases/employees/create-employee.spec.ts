@@ -1,19 +1,19 @@
-import { CreateUserUseCase } from "@/application/use-cases/users";
+import { CreateEmployeeUseCase } from "@/application/use-cases/employees";
 import { ConflictError, InternalError, ValidationError } from "@/core/errors";
-import { User } from "@/domain/entities";
-import { InMemoryUserRepository } from "../../../test-repositories/in-memory-user-repository";
+import { Employee } from "@/domain/entities";
+import { InMemoryEmployeeRepository } from "../../../test-repositories/in-memory-employee-repository";
 
 vi.spyOn(console, "error").mockImplementation(() => {});
 
 const makeSut = () => {
-  const repo = new InMemoryUserRepository();
-  const sut = new CreateUserUseCase(repo);
+  const repo = new InMemoryEmployeeRepository();
+  const sut = new CreateEmployeeUseCase(repo);
 
   return { sut, repo };
 };
 
-describe("CreateUserUseCase", () => {
-  it("creates user and returns it on success", async () => {
+describe("CreateEmployeeUseCase", () => {
+  it("creates employee and returns it on success", async () => {
     // Arrange
     const { sut, repo } = makeSut();
 
@@ -27,11 +27,11 @@ describe("CreateUserUseCase", () => {
     expect(result.isRight()).toBe(true);
 
     if (result.isRight()) {
-      expect(result.value.user.name).toBe("John Doe");
-      expect(result.value.user.email).toBe("john@example.com");
+      expect(result.value.employee.name).toBe("John Doe");
+      expect(result.value.employee.email).toBe("john@example.com");
     }
 
-    expect(repo.users).toHaveLength(1);
+    expect(repo.employees).toHaveLength(1);
   });
 
   it("returns ValidationError when email is invalid", async () => {
@@ -49,7 +49,9 @@ describe("CreateUserUseCase", () => {
   it("returns ConflictError when email already exists", async () => {
     // Arrange
     const { sut, repo } = makeSut();
-    await repo.create(User.create({ name: "Jane", email: "john@example.com" }));
+    await repo.create(
+      Employee.create({ name: "Jane", email: "john@example.com" })
+    );
 
     // Act
     const result = await sut.execute({
