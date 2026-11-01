@@ -1,0 +1,20 @@
+{
+  "name": "genyo-root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Orquestração e release do repositório: API em api/ e frontend em web/.",
+  "scripts": {
+    "install:all": "npm ci --prefix api",
+    "dev": "npm run dev --prefix api",
+    "lint": "npm run lint --prefix api",
+    "typecheck": "npm run typecheck --prefix api",
+    "build": "npm run build --prefix api",
+    "test": "npm test --prefix api",
+    "test:infra": "npm run test:infra --prefix api",
+    "db:up": "npm run db:up --prefix api",
+    "db:down": "npm run db:down --prefix api"
+  },
+  "devDependencies": {
+    "semantic-release": "^25.0.9"
+  }
+}
