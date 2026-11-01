@@ -45,6 +45,10 @@ export const EmployeeResponseSchema = z
   .object({ data: EmployeeSchema })
   .meta({ id: "EmployeeResponse" });
 
+export const EmployeeListResponseSchema = z
+  .object({ data: z.array(EmployeeSchema) })
+  .meta({ id: "EmployeeListResponse" });
+
 export const ErrorResponseSchema = z
   .object({
     error: z.string().meta({

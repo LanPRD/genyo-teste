@@ -1,7 +1,11 @@
 import { CreateEmployeeSchema } from "@/application/dtos";
 import type { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
 import { z } from "zod";
-import { EmployeeResponseSchema, ErrorResponseSchema } from "./schemas";
+import {
+  EmployeeListResponseSchema,
+  EmployeeResponseSchema,
+  ErrorResponseSchema
+} from "./schemas";
 
 const errorResponse = (
   description: string,
@@ -70,6 +74,22 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
           }
         ]
       }),
+      500: internalError
+    }
+  });
+
+  registry.registerPath({
+    method: "get",
+    path: "/employees",
+    tags: ["Employees"],
+    summary: "Lista os funcionários",
+    description:
+      "Retorna todos os funcionários, ordenados pela data de admissão (do mais antigo para o mais recente). Inclui ativos e desligados.",
+    responses: {
+      200: {
+        description: "Lista de funcionários.",
+        content: { "application/json": { schema: EmployeeListResponseSchema } }
+      },
       500: internalError
     }
   });
