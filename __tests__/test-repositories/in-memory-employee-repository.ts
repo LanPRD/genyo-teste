@@ -1,5 +1,9 @@
 import type { Employee } from "@/domain/entities";
-import { EmployeeRepository } from "@/domain/repositories";
+import {
+  EmployeeRepository,
+  type ListEmployeesParams,
+  type ListEmployeesResult
+} from "@/domain/repositories";
 
 export class InMemoryEmployeeRepository extends EmployeeRepository {
   employees: Employee[] = [];
@@ -13,8 +17,33 @@ export class InMemoryEmployeeRepository extends EmployeeRepository {
     return Promise.resolve();
   }
 
-  list(): Promise<Employee[]> {
-    throw new Error("Method not implemented.");
+  async list({
+    limit,
+    cursor
+  }: ListEmployeesParams): Promise<ListEmployeesResult> {
+    if (this.forceError) throw new Error("Forced error");
+
+    const sorted = [...this.employees].sort(
+      (a, b) =>
+        a.hireDate.getTime() - b.hireDate.getTime() ||
+        a.id.toString().localeCompare(b.id.toString())
+    );
+
+    // Como o Prisma, um cursor que não existe resulta em página vazia.
+    const cursorIndex =
+      cursor ? sorted.findIndex(e => e.id.toString() === cursor) : -1;
+    const start = cursorIndex + 1;
+    const rows =
+      cursor && cursorIndex === -1 ?
+        []
+      : sorted.slice(start, start + limit + 1);
+    const hasMore = rows.length > limit;
+    const page = hasMore ? rows.slice(0, limit) : rows;
+
+    return {
+      employees: page,
+      nextCursor: hasMore ? (page.at(-1)?.id.toString() ?? null) : null
+    };
   }
 
   update(employee: Employee): Promise<Employee> {

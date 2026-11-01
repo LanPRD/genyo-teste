@@ -1,21 +1,36 @@
+import { ListEmployeesSchema, type ListEmployeesDto } from "@/application/dtos";
 import { left, right, type Either } from "@/core/either";
-import { InternalError } from "@/core/errors";
+import { InternalError, ValidationError } from "@/core/errors";
 import { Employee } from "@/domain/entities";
 import { EmployeeRepository } from "@/domain/repositories";
 
 type ListEmployeesUseCaseResponse = Either<
-  InternalError,
-  { employees: Employee[] }
+  ValidationError | InternalError,
+  { employees: Employee[]; limit: number; nextCursor: string | null }
 >;
 
 export class ListEmployeesUseCase {
   constructor(private readonly employeeRepository: EmployeeRepository) {}
 
-  async execute(): Promise<ListEmployeesUseCaseResponse> {
+  async execute(
+    input: ListEmployeesDto
+  ): Promise<ListEmployeesUseCaseResponse> {
     try {
-      const employees = await this.employeeRepository.list();
+      const parsed = ListEmployeesSchema.safeParse(input);
 
-      return right({ employees: employees });
+      if (!parsed.success) {
+        return left(
+          new ValidationError("Invalid pagination params", parsed.error)
+        );
+      }
+
+      const { limit, cursor } = parsed.data;
+      const { employees, nextCursor } = await this.employeeRepository.list({
+        limit,
+        cursor
+      });
+
+      return right({ employees, limit, nextCursor });
     } catch (error) {
       console.error("Error listing employees", error);
       return left(new InternalError("Error listing employees"));

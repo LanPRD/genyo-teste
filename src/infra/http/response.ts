@@ -1,7 +1,6 @@
 export interface PaginationMeta {
-  page: number;
   limit: number;
-  total: number;
+  nextCursor: string | null;
 }
 
 export class ApiResponse {

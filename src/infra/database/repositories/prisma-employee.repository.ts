@@ -1,5 +1,9 @@
 import type { Employee } from "@/domain/entities";
-import { EmployeeRepository } from "@/domain/repositories";
+import {
+  EmployeeRepository,
+  type ListEmployeesParams,
+  type ListEmployeesResult
+} from "@/domain/repositories";
 import { PrismaEmployeeMapper } from "../mappers";
 import type { PrismaService } from "../prisma/prisma.service";
 
@@ -11,12 +15,24 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     });
   }
 
-  async list(): Promise<Employee[]> {
-    const employees = await this.prisma.employee.findMany({
-      orderBy: { hireDate: "asc" }
+  async list({
+    limit,
+    cursor
+  }: ListEmployeesParams): Promise<ListEmployeesResult> {
+    // Busca uma linha a mais para saber se existe próxima página.
+    const rows = await this.prisma.employee.findMany({
+      orderBy: [{ hireDate: "asc" }, { id: "asc" }],
+      take: limit + 1,
+      ...(cursor && { cursor: { id: cursor }, skip: 1 })
     });
 
-    return employees.map(entity => PrismaEmployeeMapper.toDomain(entity));
+    const hasMore = rows.length > limit;
+    const page = hasMore ? rows.slice(0, limit) : rows;
+
+    return {
+      employees: page.map(entity => PrismaEmployeeMapper.toDomain(entity)),
+      nextCursor: hasMore ? (page.at(-1)?.id ?? null) : null
+    };
   }
 
   update(_employee: Employee): Promise<Employee> {
