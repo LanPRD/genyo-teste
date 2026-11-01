@@ -11,8 +11,12 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     });
   }
 
-  list(): Promise<Employee[]> {
-    throw new Error("Method not implemented.");
+  async list(): Promise<Employee[]> {
+    const employees = await this.prisma.employee.findMany({
+      orderBy: { hireDate: "asc" }
+    });
+
+    return employees.map(entity => PrismaEmployeeMapper.toDomain(entity));
   }
 
   update(_employee: Employee): Promise<Employee> {
