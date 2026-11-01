@@ -118,19 +118,30 @@ lambda.
 
 ### Testes
 
-Vitest com SWC (necessário para o transform dos arquivos de teste). Os use cases
-são testados de forma unitária com repositórios em memória
-(`__tests__/test-repositories`). O app HTTP é testado com Supertest, também com
-repositórios em memória. Ainda não há testes de integração com o MongoDB.
+Vitest com SWC (necessário para o transform dos arquivos de teste), em três
+níveis:
+
+- **Unitário** (`__tests__/unit`, `npm test`): use cases com repositórios em
+  memória (`__tests__/test-repositories`).
+- **Integração** (`__tests__/integration`, `npm run test:integration`): use
+  cases com o `PrismaEmployeeRepository` contra um MongoDB real.
+- **E2E** (`__tests__/e2e`, `npm run test:e2e`): chamadas HTTP com Supertest no
+  app completo, também contra um MongoDB real.
+
+Integração e e2e compartilham o MongoDB do `docker-compose.test.yml` (porta
+27018, banco `genyo_test`), isolado do de desenvolvimento. Os scripts sobem o
+container; `npm run db:test:down` derruba.
 
 ### CI
 
-O workflow `release.yml` roda lint, typecheck, build e testes em push na
-`master` e, se passar, executa o semantic-release. O workflow roda só na
-`master`; ainda não há CI em pull request.
+O workflow `release.yml` roda lint, typecheck, build e os testes unitários, de
+integração e e2e (com o MongoDB de teste em Docker) em push na `master` e, se
+passar, executa o semantic-release. O workflow roda só na `master`; ainda não há
+CI em pull request.
 
 ### Observações
 
-- Rotas de `Employee`: `POST /employees` e `GET /employees/:id`.
+- Rotas de `Employee`: `POST /employees`, `GET /employees/:id` e
+  `DELETE /employees/:id`.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.
