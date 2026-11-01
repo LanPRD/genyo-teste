@@ -16,6 +16,18 @@ const internalError = errorResponse("Erro interno.", {
   message: "Unexpected internal error"
 });
 
+const idParam = z.object({
+  id: z.string().meta({
+    description: "Identificador do funcionário.",
+    example: "6297e9bb-4629-4cbe-8837-f0394e92f0c5"
+  })
+});
+
+const employeeNotFound = errorResponse("Funcionário não encontrado.", {
+  error: "EMPLOYEE_NOT_FOUND",
+  message: "Employee with id 6297e9bb-4629-4cbe-8837-f0394e92f0c5 not found"
+});
+
 export function registerEmployeeDocs(registry: OpenAPIRegistry) {
   registry.registerPath({
     method: "post",
@@ -67,24 +79,27 @@ export function registerEmployeeDocs(registry: OpenAPIRegistry) {
     path: "/employees/{id}",
     tags: ["Employees"],
     summary: "Busca um funcionário pelo id",
-    request: {
-      params: z.object({
-        id: z.string().meta({
-          description: "Identificador do funcionário.",
-          example: "6297e9bb-4629-4cbe-8837-f0394e92f0c5"
-        })
-      })
-    },
+    request: { params: idParam },
     responses: {
       200: {
         description: "Funcionário encontrado.",
         content: { "application/json": { schema: EmployeeResponseSchema } }
       },
-      404: errorResponse("Funcionário não encontrado.", {
-        error: "EMPLOYEE_NOT_FOUND",
-        message:
-          "Employee with id 6297e9bb-4629-4cbe-8837-f0394e92f0c5 not found"
-      }),
+      404: employeeNotFound,
+      500: internalError
+    }
+  });
+
+  registry.registerPath({
+    method: "delete",
+    path: "/employees/{id}",
+    tags: ["Employees"],
+    summary: "Exclui um funcionário",
+    description: "Remove o funcionário definitivamente.",
+    request: { params: idParam },
+    responses: {
+      204: { description: "Funcionário excluído." },
+      404: employeeNotFound,
       500: internalError
     }
   });
