@@ -2,7 +2,8 @@ import type { CreateEmployeeDto } from "@/application/dtos";
 import {
   CreateEmployeeUseCase,
   DeleteEmployeeUseCase,
-  GetEmployeeByIdUseCase
+  GetEmployeeByIdUseCase,
+  ListEmployeesUseCase
 } from "@/application/use-cases/employees";
 import { NotFoundError, ValidationError } from "@/core/errors";
 import { ClosingPeriodicity } from "@/domain/enums";
@@ -145,6 +146,63 @@ describe("Employee use cases (integration)", () => {
       // Assert
       expect(result.value).toBeInstanceOf(NotFoundError);
       expect(await prisma.employee.count()).toBe(1);
+    });
+  });
+
+  describe("ListEmployeesUseCase", () => {
+    it("walks every employee exactly once by cursor, even with equal hire dates", async () => {
+      // Arrange
+      const create = new CreateEmployeeUseCase(repository);
+
+      for (const hireDate of [
+        "2024-01-10",
+        "2022-05-01",
+        "2022-05-01",
+        "2023-03-15",
+        "2022-05-01"
+      ]) {
+        await create.execute({ ...input, hireDate });
+      }
+
+      const expectedIds = (
+        await prisma.employee.findMany({
+          orderBy: [{ hireDate: "asc" }, { id: "asc" }]
+        })
+      ).map(employee => employee.id);
+      const sut = new ListEmployeesUseCase(repository);
+
+      // Act
+      const ids: string[] = [];
+      let cursor: string | undefined;
+
+      do {
+        const result = await sut.execute({ limit: 2, cursor });
+
+        if (result.isLeft()) throw result.value;
+
+        ids.push(...result.value.employees.map(e => e.id.toString()));
+        cursor = result.value.nextCursor ?? undefined;
+      } while (cursor);
+
+      // Assert
+      expect(ids).toEqual(expectedIds);
+    });
+
+    it("returns an empty page when the cursor does not exist", async () => {
+      // Arrange
+      await new CreateEmployeeUseCase(repository).execute(input);
+      const sut = new ListEmployeesUseCase(repository);
+
+      // Act
+      const result = await sut.execute({ cursor: "missing-id" });
+
+      // Assert
+      expect(result.isRight()).toBe(true);
+
+      if (result.isRight()) {
+        expect(result.value.employees).toEqual([]);
+        expect(result.value.nextCursor).toBeNull();
+      }
     });
   });
 });

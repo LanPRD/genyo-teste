@@ -122,6 +122,40 @@ describe("HTTP app (e2e)", () => {
     expect(response.body.error).toBe("EMPLOYEE_NOT_FOUND");
   });
 
+  it("GET /employees paginates by cursor", async () => {
+    const app = makeApp();
+
+    for (const hireDate of ["2022-01-10", "2023-01-10", "2024-01-10"]) {
+      await request(app)
+        .post("/employees")
+        .send({ ...employeeBody, hireDate });
+    }
+
+    const first = await request(app).get("/employees?limit=2");
+    const second = await request(app).get(
+      `/employees?limit=2&cursor=${first.body.meta.nextCursor}`
+    );
+
+    expect(first.status).toBe(200);
+    expect(
+      first.body.data.map((e: { hireDate: string }) => e.hireDate)
+    ).toEqual(["2022-01-10T00:00:00.000Z", "2023-01-10T00:00:00.000Z"]);
+    expect(first.body.meta).toEqual({
+      limit: 2,
+      nextCursor: first.body.data[1].id
+    });
+    expect(second.body.data).toHaveLength(1);
+    expect(second.body.meta).toEqual({ limit: 2, nextCursor: null });
+  });
+
+  it("GET /employees returns 400 on invalid limit", async () => {
+    const response = await request(makeApp()).get("/employees?limit=0");
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("VALIDATION_ERROR");
+    expect(response.body.details[0].field).toBe("limit");
+  });
+
   it("returns 400 on malformed JSON", async () => {
     const response = await request(makeApp())
       .post("/employees")
