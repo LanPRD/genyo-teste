@@ -1,0 +1,150 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">{{ isEdit ? 'Editar funcionário' : 'Novo funcionário' }}</h1>
+  <a routerLink="/employees" class="btn btn-outline-secondary">Voltar</a>
+</div>
+
+@if (loading()) {
+  <div class="text-center py-5">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+  </div>
+} @else if (loadError(); as error) {
+  <div class="alert alert-danger" role="alert">{{ error }}</div>
+} @else {
+  @if (serverError(); as error) {
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="review()" novalidate>
+    <div class="row g-3">
+      <div class="col-12">
+        <label for="name" class="form-label">Nome</label>
+        <input
+          id="name"
+          type="text"
+          class="form-control"
+          formControlName="name"
+          autocomplete="off"
+          [class.is-invalid]="!!fieldError('name')"
+        />
+        <div class="invalid-feedback">{{ fieldError('name') }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="hireDate" class="form-label">Data de admissão</label>
+        <input
+          id="hireDate"
+          type="date"
+          class="form-control"
+          formControlName="hireDate"
+          [class.is-invalid]="!!fieldError('hireDate')"
+        />
+        <div class="invalid-feedback">{{ fieldError('hireDate') }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="terminationDate" class="form-label">Data de demissão (opcional)</label>
+        <input
+          id="terminationDate"
+          type="date"
+          class="form-control"
+          formControlName="terminationDate"
+          [class.is-invalid]="!!fieldError('terminationDate')"
+        />
+        <div class="invalid-feedback">{{ fieldError('terminationDate') }}</div>
+      </div>
+
+      @if (workedDays() !== null) {
+        <div class="col-12">
+          <div class="alert alert-info mb-0 py-2" data-testid="worked-days">
+            Dias trabalhados no período: <strong>{{ workedDays() }}</strong>
+          </div>
+        </div>
+      }
+
+      <div class="col-md-6">
+        <label for="workdayStartTime" class="form-label">Início do expediente</label>
+        <input
+          id="workdayStartTime"
+          type="time"
+          class="form-control"
+          formControlName="workdayStartTime"
+          [class.is-invalid]="!!fieldError('workdayStartTime')"
+        />
+        <div class="invalid-feedback">{{ fieldError('workdayStartTime') }}</div>
+      </div>
+
+      <div class="col-md-6">
+        <label for="workdayEndTime" class="form-label">Fim do expediente</label>
+        <input
+          id="workdayEndTime"
+          type="time"
+          class="form-control"
+          formControlName="workdayEndTime"
+          [class.is-invalid]="!!fieldError('workdayEndTime')"
+        />
+        <div class="invalid-feedback">{{ fieldError('workdayEndTime') }}</div>
+      </div>
+
+      @if (dailyHours() !== null) {
+        <div class="col-12">
+          <div class="alert alert-info mb-0 py-2" data-testid="daily-hours">
+            Horas trabalhadas por dia: <strong>{{ dailyHours() }}</strong>
+          </div>
+        </div>
+      }
+
+      <div class="col-12">
+        <label for="closingPeriodicity" class="form-label">Periodicidade do fechamento</label>
+        <select
+          id="closingPeriodicity"
+          class="form-select"
+          formControlName="closingPeriodicity"
+          [class.is-invalid]="!!fieldError('closingPeriodicity')"
+        >
+          <option value="" disabled>Selecione...</option>
+          @for (periodicity of periodicities; track periodicity.value) {
+            <option [value]="periodicity.value">{{ periodicity.label }}</option>
+          }
+        </select>
+        <div class="invalid-feedback">{{ fieldError('closingPeriodicity') }}</div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <a routerLink="/employees" class="btn btn-outline-secondary">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Salvar</button>
+    </div>
+  </form>
+}
+
+<app-confirm-modal
+  [open]="confirming()"
+  [title]="isEdit ? 'Confirmar alterações' : 'Confirmar cadastro'"
+  [busy]="saving()"
+  (confirmed)="confirmSave()"
+  (cancelled)="cancelConfirmation()"
+>
+  <dl class="row mb-3" data-testid="summary">
+    <dt class="col-5">Nome</dt>
+    <dd class="col-7">{{ summary().name }}</dd>
+    <dt class="col-5">Admissão</dt>
+    <dd class="col-7">{{ summary().hireDate }}</dd>
+    <dt class="col-5">Demissão</dt>
+    <dd class="col-7">{{ summary().terminationDate }}</dd>
+    <dt class="col-5">Expediente</dt>
+    <dd class="col-7">{{ summary().workdayStartTime }} às {{ summary().workdayEndTime }}</dd>
+    <dt class="col-5">Periodicidade</dt>
+    <dd class="col-7">{{ summary().closingPeriodicity }}</dd>
+    @if (workedDays() !== null) {
+      <dt class="col-5">Dias trabalhados</dt>
+      <dd class="col-7">{{ workedDays() }}</dd>
+    }
+    @if (dailyHours() !== null) {
+      <dt class="col-5">Horas por dia</dt>
+      <dd class="col-7">{{ dailyHours() }}</dd>
+    }
+  </dl>
+  <p class="mb-0">Deseja realmente prosseguir?</p>
+</app-confirm-modal>

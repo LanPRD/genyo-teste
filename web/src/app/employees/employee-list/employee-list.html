@@ -1,0 +1,111 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3 mb-0">Funcionários</h1>
+  <a routerLink="/employees/new" class="btn btn-primary">Novo funcionário</a>
+</div>
+
+@if (message(); as flash) {
+  <div class="alert alert-dismissible" [class]="'alert-' + flash.type" role="alert">
+    {{ flash.text }}
+    <button type="button" class="btn-close" aria-label="Fechar" (click)="dismissMessage()"></button>
+  </div>
+}
+
+@if (loadError(); as error) {
+  <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+    <span>{{ error }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="load(true)">
+      Tentar novamente
+    </button>
+  </div>
+}
+
+@if (loaded() && employees().length === 0 && !loadError()) {
+  <div class="text-center text-muted py-5 border rounded">
+    <p class="mb-3">Nenhum funcionário cadastrado.</p>
+    <a routerLink="/employees/new" class="btn btn-outline-primary">Cadastrar funcionário</a>
+  </div>
+}
+
+@if (employees().length > 0) {
+  <div class="table-responsive">
+    <table class="table table-hover align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Nome</th>
+          <th scope="col">Admissão</th>
+          <th scope="col">Demissão</th>
+          <th scope="col">Periodicidade do fechamento</th>
+          <th scope="col" class="text-end">Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (employee of employees(); track employee.id) {
+          <tr>
+            <td>
+              <div>{{ employee.name }}</div>
+              <small class="text-muted" [title]="employee.id"
+                >ID {{ employee.id.slice(0, 8) }}</small
+              >
+            </td>
+            <td>{{ formatDate(employee.hireDate) }}</td>
+            <td>
+              @if (employee.terminationDate) {
+                {{ formatDate(employee.terminationDate) }}
+              } @else {
+                <span class="badge text-bg-success">Em atividade</span>
+              }
+            </td>
+            <td>{{ periodicityLabel(employee.closingPeriodicity) }}</td>
+            <td class="text-end text-nowrap">
+              <a
+                [routerLink]="['/employees', employee.id, 'edit']"
+                class="btn btn-sm btn-outline-primary me-2"
+              >
+                Editar
+              </a>
+              <button
+                type="button"
+                class="btn btn-sm btn-outline-danger"
+                (click)="askDelete(employee)"
+              >
+                Excluir
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+@if (loading()) {
+  <div class="text-center py-3">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Carregando...</span>
+    </div>
+  </div>
+}
+
+@if (nextCursor() && !loading()) {
+  <div class="text-center">
+    <button type="button" class="btn btn-outline-secondary" (click)="load()">Carregar mais</button>
+  </div>
+}
+
+<app-confirm-modal
+  [open]="employeeToDelete() !== null"
+  title="Excluir funcionário"
+  confirmLabel="Excluir"
+  confirmClass="btn-danger"
+  [busy]="deleting()"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+>
+  @if (employeeToDelete(); as employee) {
+    <p class="mb-2">
+      Você vai excluir <strong>{{ employee.name }}</strong> (admitido em
+      {{ formatDate(employee.hireDate) }}).
+    </p>
+    <p class="mb-0">Esta ação não pode ser desfeita. Deseja realmente prosseguir?</p>
+  }
+</app-confirm-modal>

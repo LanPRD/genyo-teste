@@ -1,3 +1,24 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'employees' },
+  {
+    path: 'employees',
+    title: 'Funcionários',
+    loadComponent: () =>
+      import('./employees/employee-list/employee-list').then((m) => m.EmployeeList),
+  },
+  {
+    path: 'employees/new',
+    title: 'Novo funcionário',
+    loadComponent: () =>
+      import('./employees/employee-form/employee-form').then((m) => m.EmployeeForm),
+  },
+  {
+    path: 'employees/:id/edit',
+    title: 'Editar funcionário',
+    loadComponent: () =>
+      import('./employees/employee-form/employee-form').then((m) => m.EmployeeForm),
+  },
+  { path: '**', redirectTo: 'employees' },
+];
