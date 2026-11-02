@@ -4,17 +4,18 @@
   "private": true,
   "description": "Orquestração e release do repositório: API em api/ e frontend em web/.",
   "scripts": {
-    "install:all": "npm ci --prefix api",
-    "dev": "npm run dev --prefix api",
-    "lint": "npm run lint --prefix api",
+    "install:all": "npm ci && npm ci --prefix api && npm ci --prefix web",
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --prefix api\" \"npm start --prefix web\"",
+    "lint": "npm run lint --prefix api && npm run lint --prefix web",
     "typecheck": "npm run typecheck --prefix api",
-    "build": "npm run build --prefix api",
-    "test": "npm test --prefix api",
+    "build": "npm run build --prefix api && npm run build --prefix web",
+    "test": "npm test --prefix api && npm test --prefix web -- --no-watch",
     "test:infra": "npm run test:infra --prefix api",
     "db:up": "npm run db:up --prefix api",
     "db:down": "npm run db:down --prefix api"
   },
   "devDependencies": {
+    "concurrently": "^10.0.6",
     "semantic-release": "^25.0.9"
   }
 }
