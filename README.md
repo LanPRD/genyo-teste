@@ -1,42 +1,46 @@
 # genyo
 
-API em Node.js + TypeScript com Express, MongoDB e Prisma.
+CRUD de funcionários: API em Node.js + TypeScript (Express, MongoDB e Prisma) e
+frontend em Angular.
 
 ## Estrutura do repositório
 
 - `api/`: a API, com `package.json`, ESLint, Prettier e TypeScript próprios.
+- `web/`: o frontend Angular, também independente (`angular-eslint`, Prettier e
+  TypeScript próprios).
 - Raiz: orquestração (`package.json` com scripts atalho), release
   (semantic-release), CI e `.editorconfig`.
 
-Os caminhos citados daqui para baixo são relativos a `api/`.
+Nas decisões técnicas abaixo, os caminhos são relativos a `api/`.
 
 ## Stack
 
-- Node 24, TypeScript 6, Express 5
-- MongoDB + Prisma 6
+- API: Node 24, TypeScript 6, Express 5, MongoDB + Prisma 6
 - Zod (validação de DTOs e de variáveis de ambiente) e OpenAPI com Swagger UI
 - Vitest + Supertest (testes), ESLint com `@prdev-solutions/eslint-config` e
   Prettier
+- Frontend: Angular 22, Bootstrap 5 e Moment.js
 - GitHub Actions + semantic-release
 
 ## Como rodar
 
 ```bash
-cd api
-cp .env.example .env
-npm ci
-npm run db:up         # MongoDB local com replica set (Docker)
-npm run prisma:push   # cria coleções e índices
-npm run dev
+cp api/.env.example api/.env
+npm run install:all                # dependências da raiz, de api/ e de web/
+npm run db:up                      # MongoDB local com replica set (Docker)
+npm --prefix api run prisma:push   # cria coleções e índices
+npm run dev                        # API e frontend juntos
 ```
 
 A API sobe em `http://localhost:3000`. A documentação interativa (Swagger UI)
-fica em `http://localhost:3000/docs`, onde dá para testar todas as rotas.
+fica em `http://localhost:3000/docs`, onde dá para testar todas as rotas. O
+frontend sobe em `http://localhost:4200` e fala com a API pelo CORS.
 
-Outros scripts, dentro de `api/`: `npm test`, `npm run test:integration`,
-`npm run test:e2e`, `npm run lint`, `npm run typecheck`, `npm run build` e
-`npm start`. Da raiz, `npm run dev`, `npm test`, `npm run lint`,
-`npm run typecheck` e `npm run build` chamam os mesmos scripts da API.
+Para rodar um projeto isolado: `npm run dev` (API) ou `npm start` (frontend)
+dentro de `api/` ou `web/`. Dentro de `api/` também existem
+`npm run test:integration`, `npm run test:e2e`, `npm run typecheck` e
+`npm start`. Da raiz, `npm test`, `npm run lint` e `npm run build` rodam os
+scripts dos dois projetos.
 
 ## Decisões técnicas
 
@@ -177,3 +181,31 @@ CI em pull request.
   Bimestral, Trimestral, Semestral e Anual fica no frontend.
 - O `GET /health` faz ping no MongoDB e responde 503 se o banco estiver
   indisponível.
+
+## Frontend
+
+Os caminhos desta seção são relativos a `web/`.
+
+Angular com componentes standalone e signals, Bootstrap 5 (só o CSS) e
+Moment.js para datas e horários. Telas: listagem (`/employees`), cadastro
+(`/employees/new`) e edição (`/employees/:id/edit`).
+
+- **Modais de confirmação** (cadastro, edição e exclusão): um componente próprio
+  em `shared/confirm-modal`, feito com as classes do Bootstrap e controlado pelo
+  estado do Angular. Não uso o JavaScript do Bootstrap para não disputar o DOM
+  com o framework. A requisição só é enviada depois do "Confirmar".
+- **Validação**: o formulário aplica no navegador as mesmas regras da API (nome
+  sem números, campos obrigatórios, demissão não anterior à admissão, fim do
+  expediente não anterior ao início) e mostra no campo o erro 400 que a API
+  devolver.
+- **Cálculos na tela** (`core/calculations.ts`, com Moment): os dias trabalhados
+  contam o dia da admissão e o da demissão, em dias corridos, e só aparecem
+  quando há data de demissão. As horas por dia aparecem como `9h 30min`, no mesmo
+  dia e sem intervalos. A API não guarda nem devolve esses valores.
+- **Listagem**: ordenada pela admissão (a API já devolve assim), com o cursor da
+  API num botão "Carregar mais". Depois de excluir, a lista recarrega do início,
+  porque o cursor atual pode apontar para o registro excluído.
+- **Periodicidade**: a tela traduz os códigos da API para Mensal, Bimestral,
+  Trimestral, Semestral e Anual (`core/employee.model.ts`).
+- **Testes**: Vitest do Angular (`npm test` em `web/`), com os cálculos, os
+  validadores, o serviço HTTP e os componentes.
