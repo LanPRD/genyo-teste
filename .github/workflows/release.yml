@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  test:
+  api:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -51,8 +51,38 @@ jobs:
       - name: Integration and E2E tests
         run: npm run test:infra
 
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test -- --no-watch
+
   release:
-    needs: test
+    needs: [api, web]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
